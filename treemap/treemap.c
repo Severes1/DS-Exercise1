@@ -7,22 +7,23 @@
 
 typedef struct TreeMapNode { 
     int key; 
-    char value1[MAX_STRING_SIZE];
-    float value2;
+    char *data;
+    // int data_size; // Start by enforcing same size in all elements
     struct TreeMapNode * left;
     struct TreeMapNode * right;
 } TreeMapStruct, *TreeMapNode;
 
 struct TreeMapHeader {
     TreeMapNode contents;
+    int data_size;
 };
 
 /* Creates a new TreeMapNode node with the given info */
-TreeMapNode treemap_node_create(int key, char* value1, float value2) {
+TreeMapNode treemap_node_create(int key, char* data, int size) {
     TreeMapNode new_treemap = malloc(sizeof(TreeMapStruct));
     new_treemap->key = key;
-    memcpy(new_treemap->value1, value1, MAX_STRING_SIZE); 
-    new_treemap->value2 = value2;
+    new_treemap->data = malloc(size);
+    memcpy(new_treemap->data, data, size); 
     new_treemap->left = NULL;
     new_treemap->right = NULL;
     return new_treemap;
@@ -46,44 +47,42 @@ int treemap_node_contains(TreeMapNode treemap, int key) {
 }
 
 /* Updates an existing entry, or creates a new one if it doesn't exist */
-int treemap_node_set(TreeMapNode treemap, int key, char* value1, float value2) {
+int treemap_node_set(TreeMapNode treemap, int key, char* data, int size) {
     if (treemap == NULL) {
         return -1;
     }
     if (treemap->key == key) {
-        memcpy(treemap->value1, value1, MAX_STRING_SIZE);
-        treemap->value2 = value2; 
+        memcpy(treemap->data, data, size);
         return 0;
     } else if (key < treemap->key) {
         if (treemap->left == NULL) {
-            treemap->left = treemap_node_create(key, value1, value2);
+            treemap->left = treemap_node_create(key, data, size);
             return 0;
         } else {
-            return treemap_node_set(treemap->left, key, value1, value2); 
+            return treemap_node_set(treemap->left, key, data, size); 
         }
     } else {
         if (treemap->right == NULL) {
-            treemap->right = treemap_node_create(key, value1, value2);
+            treemap->right = treemap_node_create(key, data, size);
             return 0;
         } else {
-            return treemap_node_set(treemap->right, key, value1, value2);
+            return treemap_node_set(treemap->right, key, data, size);
         }
     }
 }
 
 /* Writes the given entry into the given pointers */
-int treemap_node_get(TreeMapNode treemap, int key, char* value1, float *value2) {
+int treemap_node_get(TreeMapNode treemap, int key, char* data, int size) {
     if (treemap == NULL) {
         return -1;
     }
     if (key == treemap->key) {
-        memcpy(value1, treemap->value1, MAX_STRING_SIZE);
-        *value2 = treemap->value2;
+        memcpy(data, treemap->data, size);
         return 0;
     } else if (key < treemap->key) {
-        return treemap_node_get(treemap->left, key, value1, value2);
+        return treemap_node_get(treemap->left, key, data, size); 
     } else {
-        return treemap_node_get(treemap->right, key, value1, value2);
+        return treemap_node_get(treemap->right, key, data, size);
     }
 }
 
@@ -113,6 +112,7 @@ int treemap_node_delete(TreeMapNode treemap, int key) {
             return -1; // Entry does not exist
         } else if (treemap->left->key == key) {
             TreeMapNode temp = patch(treemap->left->left, treemap->left->right);
+            free(treemap->left->data);
             free(treemap->left);
             treemap->left = temp;
             return 0;
@@ -124,6 +124,7 @@ int treemap_node_delete(TreeMapNode treemap, int key) {
             return -1; // Entry does not exist
         } else if (treemap->right->key == key) {
             TreeMapNode temp = patch(treemap->right->left, treemap->right->right);
+            free(treemap->right->data);
             free(treemap->right);
             treemap->right = temp;
             return 0;
@@ -144,9 +145,10 @@ int treemap_node_count(TreeMapNode treemap) {
 }
 
 // Creates a new treemap
-TreeMap treemap_create() {
+TreeMap treemap_create(int data_size) {
     TreeMap header = malloc(sizeof(struct TreeMapHeader));
     header->contents = NULL;
+    header->data_size = data_size;
     return header;
 }
 
@@ -160,16 +162,16 @@ int treemap_contains(TreeMap treemap, int key) {
 }
 
 /* Updates an existing entry, or creates a new one if it doesn't exist */
-int treemap_set(TreeMap treemap, int key, char* value1, float value2) {
+int treemap_set(TreeMap treemap, int key, char* data) {
     if (treemap->contents == NULL) {
-        treemap->contents = treemap_node_create(key, value1, value2);
+        treemap->contents = treemap_node_create(key, data, treemap->data_size);
     }
-    return treemap_node_set(treemap->contents, key, value1, value2);
+    return treemap_node_set(treemap->contents, key, data, treemap->data_size);
 }
 
 /* Writes the given entry into the given pointers */
-int treemap_get(TreeMap treemap, int key, char* value1, float *value2) {
-    return treemap_node_get(treemap->contents, key, value1, value2);
+int treemap_get(TreeMap treemap, int key, char* data) {
+    return treemap_node_get(treemap->contents, key, data, treemap->data_size);
 }
 
 /* Removes the given entry from the treemap */
@@ -203,6 +205,7 @@ void treemap_node_free(TreeMapNode node) {
     if (node->right != NULL) {
         treemap_node_free(node->right);
     }
+    free(node->data);
     free(node);
 }
 
