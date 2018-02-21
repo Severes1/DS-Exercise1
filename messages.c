@@ -7,6 +7,13 @@
 #include <fcntl.h>
 #include <stdio.h>
 
+struct Connection {
+    int id;
+    char name[MAX_RETURN_QUEUE_NAME];
+}; 
+
+typedef struct Connection ConnectionStruct;
+
 void generate_message(Message * message,
         char status, int key, char * value1, float value2, char * return_queue) {
 
@@ -44,7 +51,10 @@ Connection create_connection_read(char *name) {
     }
     mq_getattr(mq_id, &mqueue_attr);
     assert(mq_id != -1);
-    return mq_id;
+    Connection ret = malloc(sizeof(ConnectionStruct));
+    ret->id = mq_id;
+    memcpy(ret->name, name, MAX_RETURN_QUEUE_NAME);
+    return ret;
 }   
 
 
@@ -71,11 +81,14 @@ Connection open_connection_write(char * name) {
     printf("Connection name: \"%s\"\n", name);
     mq_getattr(mq_id, &mqueue_attr);
     assert(mq_id != -1);
-    return mq_id;
+    Connection ret = malloc(sizeof(ConnectionStruct));
+    ret->id = mq_id;
+    memcpy(ret->name, name, MAX_RETURN_QUEUE_NAME);
+    return ret;
 }
 
 void close_connection(Connection connection) {
-    mq_close(connection);
+    mq_close(connection->id);
 }
 
 void remove_connection(char * name) {
@@ -83,9 +96,8 @@ void remove_connection(char * name) {
 }
 
 int send_message(Connection connection, Message * message) {
-    printf("Sending: %s\n", message_to_string(message));
-    printf("Connection: %d\n", connection);
-    int ret = mq_send(connection, (char *) message, sizeof(Message), 0);
+    printf("Sending: %s To: %s\n", message_to_string(message), connection->name);
+    int ret = mq_send(connection->id, (char *) message, sizeof(Message), 0);
     if (ret < 0) {
         perror("send_message");
     }
@@ -94,7 +106,7 @@ int send_message(Connection connection, Message * message) {
 }
 
 int receive_message(Connection connection, Message * buffer) {
-    return mq_receive(connection, (char *) buffer, MSG_SIZE, NULL);
+    return mq_receive(connection->id, (char *) buffer, MSG_SIZE, NULL);
 }
 
 char * message_to_string(Message * msg) {

@@ -13,8 +13,8 @@ int main() {
     mqueue_attr.mq_maxmsg = MAX_MSG;
     mqueue_attr.mq_msgsize = sizeof(Message);
 
-    mqd_t server = mq_open("/SERVER", O_WRONLY, 0666, &mqueue_attr); 
-    mqd_t response_queue = create_connection_read("/CLIENT");
+    Connection server = open_connection_write("/SERVER");//mq_open("/SERVER", O_WRONLY, 0666, &mqueue_attr); 
+    Connection response_queue = create_connection_read("/CLIENT");
 
     if (response_queue < 0) {
         perror("response_queue");
@@ -27,8 +27,8 @@ int main() {
     
     printf("Sending request: %s\n", message_to_string(request));
 
-    if (mq_send(server, (char *) request, MSG_SIZE, 0) < 0) {
-        perror("mq_send");        
+    if (send_message(server, request) < 0) {
+        perror("send_message");
     }
 
     printf("Waiting for response...\n");
