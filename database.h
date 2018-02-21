@@ -1,9 +1,9 @@
-typedef int Database;
+typedef struct Database *Database;
 
 Database db_init(int data_size);
 int db_contains(Database db, int key);
-int db_insert(Database db, int key, char* data);
-int db_update(Database db, int key, char* data);
+int db_insert(Database db, int key, const char* data);
+int db_update(Database db, int key, const char* data);
 int db_get(Database db, int key, char* data);
 int db_delete(Database db, int key);
 int db_count(Database db);

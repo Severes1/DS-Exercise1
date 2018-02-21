@@ -19,7 +19,7 @@ struct TreeMapHeader {
 };
 
 /* Creates a new TreeMapNode node with the given info */
-TreeMapNode treemap_node_create(int key, char* data, int size) {
+TreeMapNode treemap_node_create(int key, const char* data, int size) {
     TreeMapNode new_treemap = malloc(sizeof(TreeMapStruct));
     new_treemap->key = key;
     new_treemap->data = malloc(size);
@@ -47,7 +47,7 @@ int treemap_node_contains(TreeMapNode treemap, int key) {
 }
 
 /* Updates an existing entry, or creates a new one if it doesn't exist */
-int treemap_node_set(TreeMapNode treemap, int key, char* data, int size) {
+int treemap_node_set(TreeMapNode treemap, int key, const char* data, int size) {
     if (treemap == NULL) {
         return -1;
     }
@@ -162,7 +162,7 @@ int treemap_contains(TreeMap treemap, int key) {
 }
 
 /* Updates an existing entry, or creates a new one if it doesn't exist */
-int treemap_set(TreeMap treemap, int key, char* data) {
+int treemap_set(TreeMap treemap, int key, const char* data) {
     if (treemap->contents == NULL) {
         treemap->contents = treemap_node_create(key, data, treemap->data_size);
     }

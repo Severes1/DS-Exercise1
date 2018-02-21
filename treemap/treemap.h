@@ -9,7 +9,7 @@ TreeMap treemap_create(int data_size);
 int treemap_contains(TreeMap treemap, int key);
 
 /* Updates an existing entry, or creates a new one if it doesn't exist */
-int treemap_set(TreeMap treemap, int key, char* data);
+int treemap_set(TreeMap treemap, int key, const char* data);
 
 /* Writes the given entry into the given pointers */
 int treemap_get(TreeMap treemap, int key, char* data);

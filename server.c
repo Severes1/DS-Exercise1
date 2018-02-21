@@ -1,10 +1,11 @@
 #include <mqueue.h>
 #include "messages.h"
 #include <pthread.h>
-#include "treemap.h"
+#include "database.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #define MAX_THREADS 32
 #define TRUE 1
@@ -17,17 +18,29 @@ pthread_mutex_t mutex_cpy_msg;
 pthread_cond_t cond_cpy_msg;
 int msg_copied;
 
-TreeMap database = NULL; 
+Database database = NULL; 
 pthread_mutex_t mutex_database;
+
+typedef struct Data {
+    char value1[256];
+    float value2; 
+} Data;
+
+Data new_data(char * value1, float value2) {
+    Data data;
+    memcpy(data.value1, value1, 256);
+    data.value2 = value2;
+    return data;
+}
 
 /* Create a fresh empty database */
 Response process_init(Request request) {
     assert(request->status == 0);
     pthread_mutex_lock(&mutex_database);
     if (database != NULL) {
-        treemap_free(database);
+        db_destroy(database);
     }
-    database = treemap_create();
+    database = db_init(sizeof(Data));
     pthread_mutex_unlock(&mutex_database);
     return RESPONSE_SUCCESS;
 }
@@ -36,15 +49,13 @@ Response process_init(Request request) {
 Response process_set(Request request) {
     assert(request->status == 1);
     Response ret;
+    Data data = new_data(request->value1, request->value2);
     pthread_mutex_lock(&mutex_database);
     if (database == NULL) {
         ret = RESPONSE_ERROR;
-    } else if (treemap_contains(database, request->key)) {
+    } else if (db_contains(database, request->key)) {
         ret = RESPONSE_ERROR;
-    } else if (treemap_set(database,
-                request->key, 
-                request->value1,
-                request->value2) != 0) {
+    } else if (db_insert(database, request->key, (char *) &data) != 0) {
         ret = RESPONSE_ERROR;
     } else {
         ret = RESPONSE_SUCCESS;
@@ -59,17 +70,14 @@ Response process_get(Request request) {
     // No need to request mutex for reading.
     Response ret;
 
-    char * value1 = malloc(MAX_STRING_SIZE);
-    float * value2 = malloc(sizeof(float));
-
-    if (treemap_get(database, request->key, value1, value2) == 0) {
-        ret = generate_response(RESPONSE_SUCCESS_FLAG, request->key, value1, *value2);
+    Data res;
+    if (db_get(database, request->key, (char *) &res) == 0) {
+        ret = generate_response(RESPONSE_SUCCESS_FLAG, request->key,
+                res.value1, res.value2);
     } else {
         ret = RESPONSE_ERROR;
     }
 
-    free(value1);
-    free(value2);
     return ret;
 }
 
@@ -77,15 +85,14 @@ Response process_get(Request request) {
 Response process_modify(Request request) {
     assert(request->status == 3);
     Response ret;
+    
+    Data data = new_data(request->value1, request->value2);
     pthread_mutex_lock(&mutex_database);
 
-    if (!treemap_contains(database, request->key)) {
+    if (!db_contains(database, request->key)) {
         ret = RESPONSE_ERROR;
-    } else if (treemap_set(database,
-            request->key,
-            request->value1, 
-            request->value2) == 0) {
-                ret = RESPONSE_SUCCESS;
+    } else if (db_update(database, request->key, (char *) &data) == 0) {
+        ret = RESPONSE_SUCCESS;
     } else {
         ret = RESPONSE_ERROR;
     }
@@ -100,7 +107,7 @@ Response process_delete(Request request) {
     Response ret;
     pthread_mutex_lock(&mutex_database);
     
-    if (treemap_delete(database, request->key) != 0) {
+    if (db_delete(database, request->key) != 0) {
         ret = RESPONSE_ERROR;
     } else {
         ret = RESPONSE_SUCCESS;
@@ -114,7 +121,7 @@ Response process_delete(Request request) {
 Response process_count(Request request) {
     assert(request->status == 5);
     Response ret;
-    int count = treemap_count(database); 
+    int count = db_count(database); 
     ret = generate_response(RESPONSE_SUCCESS_FLAG, count, NULL, 0.0f);
     return ret;
 }
