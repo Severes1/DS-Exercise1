@@ -5,6 +5,18 @@
 #define TRUE 1
 #define FALSE 0
 
+typedef struct TreeMapNode { 
+    int key; 
+    char value1[MAX_STRING_SIZE];
+    float value2;
+    struct TreeMapNode * left;
+    struct TreeMapNode * right;
+} TreeMapStruct, *TreeMapNode;
+
+struct TreeMapHeader {
+    TreeMapNode contents;
+};
+
 /* Creates a new TreeMapNode node with the given info */
 TreeMapNode treemap_node_create(int key, char* value1, float value2) {
     TreeMapNode new_treemap = malloc(sizeof(TreeMapStruct));

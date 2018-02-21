@@ -1,16 +1,6 @@
 #define MAX_STRING_SIZE 256
 
-typedef struct TreeMapNode { 
-    int key; 
-    char value1[MAX_STRING_SIZE];
-    float value2;
-    struct TreeMapNode * left;
-    struct TreeMapNode * right;
-} TreeMapStruct, *TreeMapNode;
-
-typedef struct TreeMapHeader {
-    TreeMapNode contents;
-} *TreeMap;
+typedef struct TreeMapHeader *TreeMap;
 
 /* Updates an existing entry, or creates a new one if it doesn't exist */
 TreeMap treemap_create(void);
