@@ -35,7 +35,7 @@ Response generate_response(char status, int key, char * value1, float value2) {
 
 Connection create_connection_read(char *name) {
     struct mq_attr mqueue_attr;
-    mq_unlink(QUEUE_NAME);
+    mq_unlink(name);
     mqueue_attr.mq_maxmsg = MAX_MSG;
     mqueue_attr.mq_msgsize = sizeof(Message);
     mqd_t mq_id = mq_open(QUEUE_NAME, O_RDONLY | O_CREAT, 0666, &mqueue_attr);
@@ -63,10 +63,14 @@ Connection create_connection_read(char *name) {
 Connection open_connection_write(char * name) {
     struct mq_attr mqueue_attr;
     mqueue_attr.mq_maxmsg = MAX_MSG;
-    mqueue_attr.mq_msgsize = MSG_SIZE;
-    mqd_t mq_id = mq_open(QUEUE_NAME, O_WRONLY, 0662, &mqueue_attr);
+    mqueue_attr.mq_msgsize = sizeof(Message);
+    mqd_t mq_id = mq_open(QUEUE_NAME, O_WRONLY, 0666, &mqueue_attr);
+    if (mq_id == -1) {
+        perror("open_connection_write");
+    }
+    printf("Connection name: \"%s\"\n", name);
+    mq_getattr(mq_id, &mqueue_attr);
     assert(mq_id != -1);
-    printf("Opened connection to %s\n", name);
     return mq_id;
 }
 
@@ -80,7 +84,13 @@ void remove_connection(char * name) {
 
 int send_message(Connection connection, Message * message) {
     printf("Sending: %s\n", message_to_string(message));
-    return mq_send(connection, (char *) message, MSG_SIZE, 0);
+    printf("Connection: %d\n", connection);
+    int ret = mq_send(connection, (char *) message, sizeof(Message), 0);
+    if (ret < 0) {
+        perror("send_message");
+    }
+    printf("mq_send returned %d\n", ret);
+    return ret;
 }
 
 int receive_message(Connection connection, Message * buffer) {
@@ -90,7 +100,7 @@ int receive_message(Connection connection, Message * buffer) {
 char * message_to_string(Message * msg) {
     char * ret = malloc(MSG_SIZE);
     sprintf(ret,
-            "status: %d, key: %d, value1: %s, value2: %f, return_queue: %s\n",
+            "status: %d, key: %d, value1: %s, value2: %f, return_queue: %s",
             msg->status,
             msg->key,
             msg->value1,

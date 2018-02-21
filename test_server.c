@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define CLIENT_QUEUE "/client"
+#define CLIENT_QUEUE "/CLIENT"
 
 int main() {
 
@@ -14,22 +14,26 @@ int main() {
     mqueue_attr.mq_msgsize = sizeof(Message);
 
     mqd_t server = mq_open("/SERVER", O_WRONLY, 0666, &mqueue_attr); 
-    mqd_t response_queue = mq_open(CLIENT_QUEUE, O_RDONLY | O_CREAT, 0666, &mqueue_attr);
+    mqd_t response_queue = create_connection_read("/CLIENT");
 
     if (response_queue < 0) {
         perror("response_queue");
+    } else {
+        printf("reponse_queue: %d\n", response_queue);
     }
-    Request request = generate_request(0, 0, NULL, 0.0f, CLIENT_QUEUE);
+    Request request = generate_request(0, 0, NULL, 0.0f, "/CLIENT");
     
     Response buffer = malloc(sizeof(Message) + 1);
     
     printf("Sending request: %s\n", message_to_string(request));
 
-    if (mq_send(server, request, MSG_SIZE, 0) < 0) {
+    if (mq_send(server, (char *) request, MSG_SIZE, 0) < 0) {
         perror("mq_send");        
     }
 
-    if (mq_receive(response_queue, buffer, MSG_SIZE, NULL) == -1) {
+    printf("Waiting for response...\n");
+    if (receive_message(response_queue, buffer) == -1) {
         perror("mq_receive failed");   
     }
+    printf("Received message: %s\n", message_to_string(buffer));
 }

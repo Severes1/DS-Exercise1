@@ -127,9 +127,12 @@ Response process_count(Request request) {
 }
 
 void * process_request(void * buffer) {
+    printf("process_request %s\n", message_to_string(buffer));
     pthread_mutex_lock(&mutex_cpy_msg);
 
-    Request request = (Request) buffer;
+    Request request = malloc(sizeof(Message));
+    memcpy(request, buffer, sizeof(Message));
+
     msg_copied = TRUE;
 
     pthread_cond_signal(&cond_cpy_msg);
