@@ -178,19 +178,10 @@ int main() {
 
     Request buffer = malloc(MSG_SIZE + 1);
 
-    pthread_t worker_threads[MAX_THREADS];
-
-    /* Maybe use a ready_queue */
-    int thread_status[MAX_THREADS]; // 0 available, 1 busy
-    for (int i = 0; i < MAX_THREADS; i++) {
-        thread_status[i] = 0;
-    }
-
     pthread_attr_t thread_attr; 
     pthread_attr_init(&thread_attr);
     pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
 
-    int last_index = 0;
     int exiting = 0;
     while(!exiting) {
         printf("Awaiting messages...\n");
@@ -199,26 +190,16 @@ int main() {
             exit(1);
         }
         printf("Received message: \n%s\n", message_to_string(buffer));
-        pthread_t * new_pthread = NULL;
-        for (int j = 0; j < MAX_THREADS; j++) {
-            int index = (j + last_index) % MAX_THREADS;
-            if (thread_status[index] == 0) {
-                new_pthread = &worker_threads[index];
-                last_index = index;
-                thread_status[index] = 1; // busy
-                break;
-            }
-        }
-        
+        pthread_t new_pthread;
+       
         msg_copied = FALSE;
         pthread_mutex_lock(&mutex_cpy_msg);
-        /*pthread_create(new_pthread, &thread_attr, process_request, buffer);
+        pthread_create(&new_pthread, &thread_attr, process_request, buffer);
         while (!msg_copied) {
             pthread_cond_wait(&cond_cpy_msg, &mutex_cpy_msg);
-        }*/
+        }
 
         pthread_mutex_unlock(&mutex_cpy_msg);
-        process_request(buffer);
     } 
     
     remove_connection(QUEUE_NAME);

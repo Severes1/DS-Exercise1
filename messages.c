@@ -101,7 +101,6 @@ int send_message(Connection connection, Message * message) {
     if (ret < 0) {
         perror("send_message");
     }
-    printf("mq_send returned %d\n", ret);
     return ret;
 }
 
