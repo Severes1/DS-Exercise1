@@ -49,8 +49,9 @@
 ***** Delete functions as follows:
 ****** Promote right node, and add left node as leaf to leftmost on the right
 ****** ^Most confusing sentence ever
-** TODO Implement message queue on server side
+** DONE Implement message queue on server side
 *** When receive, spawn thread to generate response
+*** DONE Try single threaded first.
 * TODO Develop the code that implements the previous services (init, set_value, get_value, delete_key, modify_value and num-items). 
 *** The code will be developed on the file named keys.c. 
 *** This is the code that the interface offers to the clients and is responsible for implementing the previous services (on the client side) by contacting the previous server. 

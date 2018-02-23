@@ -1,39 +1,23 @@
-#include <mqueue.h>
-#include "messages.h"
-#include <stdlib.h>
+#include "keys.h"
+#include <assert.h>
+#include <string.h>
 #include <stdio.h>
 
-#define CLIENT_QUEUE "/CLIENT"
-
 int main() {
+    init();
+    set_value(42, "Hello world", 12.3f);
+    set_value(-2, "Goodbye", -88.2f);
 
-    mq_unlink(CLIENT_QUEUE);
-
-    struct mq_attr mqueue_attr;
-    mqueue_attr.mq_maxmsg = MAX_MSG;
-    mqueue_attr.mq_msgsize = sizeof(Message);
-
-    Connection server = open_connection_write("/SERVER");//mq_open("/SERVER", O_WRONLY, 0666, &mqueue_attr); 
-    Connection response_queue = create_connection_read("/CLIENT");
-
-    if (response_queue < 0) {
-        perror("response_queue");
-    } else {
-        printf("reponse_queue: %d\n", response_queue);
-    }
-    Request request = generate_request(0, 0, NULL, 0.0f, "/CLIENT");
+    char ret1[256];
+    float ret2;
+    get_value(42, ret1, &ret2);
+    assert(strcmp(ret1, "Hello world") == 0);
+    assert(ret2 == 12.3f);
     
-    Response buffer = malloc(sizeof(Message) + 1);
-    
-    printf("Sending request: %s\n", message_to_string(request));
+    get_value(42, ret1, &ret2);
+    assert(strcmp(ret1, "Hello world") == 0);
+    assert(ret2 == 12.3f);
 
-    if (send_message(server, request) < 0) {
-        perror("send_message");
-    }
 
-    printf("Waiting for response...\n");
-    if (receive_message(response_queue, buffer) == -1) {
-        perror("mq_receive failed");   
-    }
-    printf("Received message: %s\n", message_to_string(buffer));
+    printf("Test passed!\n");
 }
