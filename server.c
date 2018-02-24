@@ -127,7 +127,7 @@ Response process_count(Request request) {
 }
 
 void * process_request(void * buffer) {
-    printf("process_request %s\n", message_to_string(buffer));
+    //printf("process_request %s\n", message_to_string(buffer));
     pthread_mutex_lock(&mutex_cpy_msg);
 
     Request request = malloc(sizeof(Message));
@@ -174,7 +174,7 @@ void * process_request(void * buffer) {
 int main() {
     Connection incoming = create_connection_read(QUEUE_NAME);
     RESPONSE_SUCCESS = generate_response(0, 0, NULL, 0.0f);
-    RESPONSE_ERROR = generate_response(1, 0, NULL, 0.0f);
+    RESPONSE_ERROR = generate_response(-1, 0, NULL, 0.0f);
 
     Request buffer = malloc(MSG_SIZE + 1);
 
@@ -182,16 +182,15 @@ int main() {
     pthread_attr_init(&thread_attr);
     pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
 
+    printf("Awaiting messages...\n");
+
     int exiting = 0;
     while(!exiting) {
-        printf("Awaiting messages...\n");
         if (receive_message(incoming, buffer) < 0) {
             perror("Failed to receive message");
             exit(1);
         }
-        printf("Received message: \n%s\n", message_to_string(buffer));
         pthread_t new_pthread;
-       
         msg_copied = FALSE;
         pthread_mutex_lock(&mutex_cpy_msg);
         pthread_create(&new_pthread, &thread_attr, process_request, buffer);
@@ -203,4 +202,5 @@ int main() {
     } 
     
     remove_connection(QUEUE_NAME);
+    return 0;
 }

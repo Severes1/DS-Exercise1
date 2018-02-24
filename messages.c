@@ -78,7 +78,7 @@ Connection open_connection_write(char * name) {
     if (mq_id == -1) {
         perror("open_connection_write");
     }
-    printf("Connection name: \"%s\"\n", name);
+    //printf("Connection name: \"%s\"\n", name);
     mq_getattr(mq_id, &mqueue_attr);
     assert(mq_id != -1);
     Connection ret = malloc(sizeof(ConnectionStruct));
@@ -96,7 +96,7 @@ void remove_connection(char * name) {
 }
 
 int send_message(Connection connection, Message * message) {
-    printf("Sending: %s To: %s\n", message_to_string(message), connection->name);
+    printf("Sending to %s: \n%s\n", connection->name, message_to_string(message));
     int ret = mq_send(connection->id, (char *) message, sizeof(Message), 0);
     if (ret < 0) {
         perror("send_message");
@@ -105,13 +105,56 @@ int send_message(Connection connection, Message * message) {
 }
 
 int receive_message(Connection connection, Message * buffer) {
-    return mq_receive(connection->id, (char *) buffer, MSG_SIZE, NULL);
+    int ret = mq_receive(connection->id, (char *) buffer, MSG_SIZE, NULL);
+    printf("Received message: \n%s\n", message_to_string(buffer));
+    return ret;
 }
 
 char * message_to_string(Message * msg) {
     char * ret = malloc(MSG_SIZE);
+    if (msg->status == 0 && msg->key == 0) {
+	if (strlen(msg->return_queue) > 0) {
+            sprintf(ret, "\tINIT");	
+	    return ret;
+        } else {
+	    sprintf(ret, "\tSUCCESS");
+	    return ret;
+	}
+    } 
+    if (msg->status == 1) {
+        sprintf(ret, "\tSET key:%d, \n\tvalue1: %s, \n\tvalue2: %f, \n\treturn_queue: %s",
+		      msg->key,
+		      msg->value1,
+ 		      msg->value2,
+    		      msg->return_queue);
+        return ret;
+    }
+    if (msg->status == 2) {
+        sprintf(ret, "\tGET key: %d", msg->key);	
+	return ret;
+    }
+    if (msg->status == 3) {
+        sprintf(ret, "\tMODIFY key:%d, \n\tvalue1: %s, \n\tvalue2: %f, \n\treturn_queue: %s",
+		      msg->key,
+		      msg->value1,
+ 		      msg->value2,
+    		      msg->return_queue);
+        return ret;
+    }
+    if (msg->status == 4) {
+        sprintf(ret, "\tDELETE key: %d", msg->key);	
+	return ret;
+    }
+    if (msg->status == 5) {
+	sprintf(ret, "\tNUM_ITEMS");
+	return ret;
+    }
+    if(msg->status == -1) {
+	sprintf(ret, "\tERROR");	
+	return ret;
+    }
     sprintf(ret,
-            "status: %d, key: %d, value1: %s, value2: %f, return_queue: %s",
+            "\tstatus: %d, \n\tkey: %d, \n\tvalue1: %s, \n\tvalue2: %f, \n\treturn_queue: %s",
             msg->status,
             msg->key,
             msg->value1,

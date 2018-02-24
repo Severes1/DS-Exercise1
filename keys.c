@@ -7,11 +7,11 @@
 int send_request(const Request request, Response response) {
     Connection server = open_connection_write("/SERVER");
     Connection response_queue = create_connection_read("/CLIENT");
-    printf("Sending request: %s\n", message_to_string(request));
+    //printf("Sending request: %s\n", message_to_string(request));
     send_message(server, request);
-    printf("Waiting for response...\n");
+    //printf("Waiting for response...\n");
     receive_message(response_queue, response);
-    printf("Received message: %s\n", message_to_string(response));
+    //printf("Received message: %s\n", message_to_string(response));
     return 0;
 }
 
@@ -59,17 +59,35 @@ int get_value(int key, char * value1, float * value2) {
  * The function returns 0 on success and -1 on error, for example, 
  * if there is no element with that key.
 */ 
-int modify_value(int key, char * value1, float * value2);
+int modify_value(int key, char * value1, float * value2) {
+    Request request = generate_request(3, key, value1, *value2, "/CLIENT");
+    Message response;
+    send_request(request, &response);
+    return response.status;
+}
 
 /*
  * This service allows you to delete the element whose key is key. 
  * The function returns 0 on success and -1 on error. In case the key 
  * does not exist, -1 is also returned.
 */
-int delete_key(int key);
+int delete_key(int key) {
+    Request request = generate_request(4, key, NULL, 0.0f, "/CLIENT");
+    Message response;
+    send_request(request, &response);
+    return response.status;
+}
 
 /*
  * This service returns the number of items stored on the server. 
  * The call returns -1 in case of error
 */
-int num_items();
+int num_items() {
+    Request request = generate_request(5, 0, NULL, 0.0f, "/CLIENT");
+    Message response;
+    send_request(request, &response);
+    if (response.status == -1) {
+        return -1;
+    }
+    return response.key;
+}

@@ -18,6 +18,13 @@ int main() {
     assert(strcmp(ret1, "Hello world") == 0);
     assert(ret2 == 12.3f);
 
+    assert ( num_items() == 2 );
+
+    assert ( delete_key(1) == -1 );
+    
+    assert ( delete_key(42) == 0 );
+
+    assert ( num_items() == 1 );
 
     printf("Test passed!\n");
 }
