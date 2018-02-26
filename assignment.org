@@ -1,10 +1,10 @@
 #+TITLE: Exercise 1: Client/Server application
-* We want to design and implement a distributed service (using POSIX message queues) that allows to store triplets <key-value1-value2>. 
-* The key will be an integer (int) 
-* the values associated with the key will be a string (maximum 256 bytes, including the 0 code that indicates the end of the string) and a float number.
-* Keep in mind that, it is also considered an error, for example, that an error occurs in the message passing system 
+We want to design and implement a distributed service (using POSIX message queues) that allows to store triplets <key-value1-value2>. 
+The key will be an integer (int) 
+the values associated with the key will be a string (maximum 256 bytes, including the 0 code that indicates the end of the string) and a float number.
+Keep in mind that, it is also considered an error, for example, that an error occurs in the message passing system 
 ** (non-existent queues, errors when sending data to a queue, errors when receiving data from queues, etc.).
-* All the above operations must be done atomicly in the server side.
+All the above operations must be done atomicly in the server side.
 * Design and implement, using exclusively POSIX message queues and the programming language C, the system that implements this service
 * DONE Design the system
 ** Server is stateful, however connectionless (no client specific data)
