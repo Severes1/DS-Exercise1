@@ -35,7 +35,7 @@
 ** Timing:
 *** Server will launch first. Clients must wait for /SERVER message queue to exist.
 *** Client sends request, Server responds. 
-* DONE Develop the server code (server.c) responsible for managing the data structures that store the key-value1-value2 elements. 
+* TODO Develop the server code (server.c) responsible for managing the data structures that store the key-value1-value2 elements. 
 ** You can choose the data structure that is considered appropriate, as long as it does not impose a limit on the number of elements that can be stored. 
 ** The developed server must be concurrent.
 ** DONE Choose data structure to store data.
@@ -52,6 +52,9 @@
 ** DONE Implement message queue on server side
 *** When receive, spawn thread to generate response
 *** DONE Try single threaded first.
+** TODO Implement alternative db using files
+** TODO make db into a static library
+** TODO better Makefiles
 * DONE Develop the code that implements the previous services (init, set_value, get_value, delete_key, modify_value and num-items). 
 *** The code will be developed on the file named keys.c. 
 *** This is the code that the interface offers to the clients and is responsible for implementing the previous services (on the client side) by contacting the previous server. 
