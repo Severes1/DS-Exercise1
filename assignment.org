@@ -6,7 +6,7 @@
 ** (non-existent queues, errors when sending data to a queue, errors when receiving data from queues, etc.).
 * All the above operations must be done atomicly in the server side.
 * Design and implement, using exclusively POSIX message queues and the programming language C, the system that implements this service
-* TODO Design the system
+* DONE Design the system
 ** Server is stateful, however connectionless (no client specific data)
 ** Server message queue will be named /SERVER
 ** Clients will choose their own unique names and send them with each request
@@ -35,7 +35,7 @@
 ** Timing:
 *** Server will launch first. Clients must wait for /SERVER message queue to exist.
 *** Client sends request, Server responds. 
-* TODO Develop the server code (server.c) responsible for managing the data structures that store the key-value1-value2 elements. 
+* DONE Develop the server code (server.c) responsible for managing the data structures that store the key-value1-value2 elements. 
 ** You can choose the data structure that is considered appropriate, as long as it does not impose a limit on the number of elements that can be stored. 
 ** The developed server must be concurrent.
 ** DONE Choose data structure to store data.
@@ -52,7 +52,7 @@
 ** DONE Implement message queue on server side
 *** When receive, spawn thread to generate response
 *** DONE Try single threaded first.
-* TODO Develop the code that implements the previous services (init, set_value, get_value, delete_key, modify_value and num-items). 
+* DONE Develop the code that implements the previous services (init, set_value, get_value, delete_key, modify_value and num-items). 
 *** The code will be developed on the file named keys.c. 
 *** This is the code that the interface offers to the clients and is responsible for implementing the previous services (on the client side) by contacting the previous server. 
 *** From this implementation, a static library called libkeys.a must be created. 
@@ -72,9 +72,13 @@
 *** This service allows you to delete the element whose key is key. The function returns 0 on success and -1 on error. In case the key does not exist, -1 is also returned.
 ** TODO int num_items(). 
 *** This service returns the number of items stored on the server. The call returns -1 in case of error.
-* TODO Develop a code example of a client (client.c) that uses the above functions. 
+* DONE Develop a code example of a client (client.c) that uses the above functions. 
 ** The executable of this program has to be generated using the library developed in the previous section, 
 ** that is, the code of this client must be linked to the previous static library. 
 ** This client will be used to  test the developed service and must make the invocations to the API of key-value pairs that it considers appropriate. 
 ** The code included in client.c may only include calls to the services implemented and described above. There cannot be any reference to message queues in it.
 * TODO Prepare a test plan for the service developed. This plan will be tested with the code developed in the previous section.
+** TODO Large data structure with multiple deletes 
+** TODO Multi-client
+* TODO Thoroughly document the system
+** Write the documentation in Git-flavored markdown, then generate pdf using pandoc
