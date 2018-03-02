@@ -7,12 +7,9 @@
 int send_request(const Request request, Response response) {
     Connection server = open_connection_write("/SERVER");
     Connection response_queue = create_connection_read("/CLIENT");
-    //printf("Sending request: %s\n", message_to_string(request));
     send_message(server, request);
-    //printf("Waiting for response...\n");
     receive_message(response_queue, response);
-    //printf("Received message: %s\n", message_to_string(response));
-    return 0;
+    return response.status;
 }
 
 /*

@@ -85,3 +85,4 @@ All the above operations must be done atomicly in the server side.
 *** TODO Multi-client
 ** TODO Thoroughly document the system
 *** Write the documentation in Git-flavored markdown, then generate pdf using pandoc
+** TODO Found a vulnerability: if you set the return address to the server's queue, it goes into an infinite loop.
