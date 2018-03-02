@@ -41,8 +41,8 @@ Response generate_response(char status, int key, char * value1, float value2) {
 }
 
 Connection create_connection_read(char *name) {
-    struct mq_attr mqueue_attr;
     mq_unlink(name);
+    struct mq_attr mqueue_attr;
     mqueue_attr.mq_maxmsg = MAX_MSG;
     mqueue_attr.mq_msgsize = sizeof(Message);
     mqd_t mq_id = mq_open(QUEUE_NAME, O_RDONLY | O_CREAT, 0666, &mqueue_attr);

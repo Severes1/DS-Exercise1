@@ -9,7 +9,7 @@ int send_request(const Request request, Response response) {
     Connection response_queue = create_connection_read("/CLIENT");
     send_message(server, request);
     receive_message(response_queue, response);
-    return response.status;
+    return response->status;
 }
 
 /*
