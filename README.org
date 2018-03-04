@@ -4,28 +4,37 @@
 #+Latex_HEADER: \usepackage[margin=1.5cm]{geometry}
 #+OPTIONS: ^:{}
 
-* TODO Definitions of Components
+* Definitions of Components
 The central component of this system is the server. It contains the database, and provides a message-queue interface for clients to connect.
-There are arbitrarily many clients.
+There are arbitrarily many clients. All components are running on the same machine.
 
-* TODO Communication protocol
+* Communication protocol
+Communication between components is via message queues. Every process opens its own
+message queue for receiving messages. To send a message to another process, the 
+sending process opens the message queue of the receiving process, writes to it, and
+closes it.
 
-* TODO Server
-1. Single or multithreaded
-2. Stateful or stateless
-* TODO Naming
+* Server
+The server is multithreaded and stateless (which is to say, connectionless). It
+controls access to a shared database. Every client request creates a new worker
+thread. The server guarantees atomic operations to the database  by using 
+mutual exclusion between the worker threads.
+
+* Naming
+The server's message queue will be called /"/SERVER"/. Each client can choose 
+its own unique name for its message queue and provide that name to the server. (See Section 5).
 
 * Message Design
 There is a single message type for both requests and responses. It has 5 fields and is structured as follows:
-| Field                 | Size      |
-|-----------------------+-----------|
-| char type/status      | 1 byte    |
-| int key/count         | 4 bytes   |
-| char value1[256]      | 256 bytes |
-| float value2          | 4 bytes   |
-| char return_queue[35] | 35 bytes  |
-|-----------------------+-----------|
-| Total                 | 300 bytes |
+| Field                 | Size        |
+|-----------------------+-------------|
+| char type/status      | 1 byte      |
+| int key/count         | 4 bytes     |
+| char value1[256]      | 256 bytes   |
+| float value2          | 4 bytes     |
+| char return_queue[35] | 35 bytes    |
+|-----------------------+-------------|
+| *Total*               | *300 bytes* |
 
 **** /char/ *type/status*
 
@@ -53,20 +62,72 @@ There is a single message type for both requests and responses. It has 5 fields 
 **** /int/ *key/count*
 ***** Request: this is the key of the element requested
 ***** Response: (only applicable to /num_items/) The number of items in the database
-**** /char/[256] *value1*
+**** /char/ *value1* [256]
 
      This represents the string value that is stored or will be stored in the database.
 **** /float/ *value2*    
 
      This represents the float value that is stored or will be stored in the database.
-**** /char/[32] *return_queue*
+**** /char/ *return_queue* [35]
 ***** Request: the message queue to which the server should write its response
 ***** Response: ignored
 
 
-* TODO My protocol
+* My protocol
+  The server is the passive entity. Every interaction consists of a *request* 
+  sent by the client to the message queue of the server. The request contains
+  the name of the client's queue, to which the server writes the *response*.
+  
+  - The first message sent by the client should be /init/ - this ensures that the server is ready to receive other messages.
+  - Since the server is stateless, there is no need to end a connection.
 
+* Security
+  There is currently a loophole: Sending the server a message with the server's
+  own queue in the *return_queue* field forces the server into an infinite loop.
 
-* TODO Security
+  As far as data, there is no security in this design. Any client can ask for
+  any information from the server.
 
-* TODO Implementation
+* Implementation
+This system is implemented using C99 using POSIX message queues.
+
+** Messages module
+To reuse the code for sending and receiving messages, there is the messages 
+library, which defines the absract datatype /Connection/, which is a wrapper
+over the /mqd_t/ type. The library provides the following functions: 
+
+| Return type | Name                   | Arguments           | Comment                                             |
+|-------------+------------------------+---------------------+-----------------------------------------------------|
+| Connection  | create_connection_read | char *name          | Given the string name of a message queue,           |
+|             |                        |                     | create and open that queue read only.               |
+| Connection  | open_connection_write  | char *name          | Given the string name of an existing message queue, |
+|             |                        |                     | and open it for writing.                            |
+| int         | send_message           | Connection, message | Send the message to the given destination.          |
+| int         | receive message        | Connection, buffer  | Block until you receive a message in the given      |
+|             |                        |                     | message queue.                                      |
+
+** Server
+The server is an infinite loop that receives messages from the /"/SERVER"/ message
+queue. On every received message, it starts a new thread. The first thing each thread
+does is atomically copy the received message and release the mutex, so the server
+can continue processing messages. This message is then categorized by its *type*
+field, and the relevant processing function is invoked.
+
+** Database
+The *database.h* header file provides a list of general purpose functions on an
+abstract datatype called /Database/. It assumes data is stored by a unique key,
+but assumes nothing about the data itself (arbitrary binary data, with a provided
+size). There are two implementations of this database.
+
+*** Treemap
+
+    The treemap is a binary search tree sorted by the keys stored inside of it,
+    and supporting operations to insert and delete keys.
+
+*** TODO Filemap
+
+** Client
+The client side abstracts access to the remote database using *keys.h*.
+
+** How to compile
+Invoke /make/ in the topmost directory to compile the entire project.
