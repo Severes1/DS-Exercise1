@@ -50,14 +50,17 @@ There is a single message type for both requests and responses. It has 5 fields 
 | 3 | modify_value | Store *value1* and *value2* under the existing key, *key*.                                   |
 | 4 | delete_key   | Delete information associated with key, *key* and remove the key from the database           |
 | 5 | num_items    | Request the number of items in the database                                                  |
-***** RESPONSE: This is the status of the request
-      - For /init/, /set_value/, /modify_value/, and /delete_key/, this is the only relevant field in the message.
+***** Response
+
+      This is the status of the request
+      
+- For /init/, /set_value/, /modify_value/, and /delete_key/, this is the only relevant field in the message.
       |  0 | success |
       | -1 | error   |
 
-      - For /get_value/, if the *status* is 0, the requested values are stored in the *value1* and *value2* fields of the message.
+- For /get_value/, if the *status* is 0, the requested values are stored in the *value1* and *value2* fields of the message.
 
-      - For /num_items/, if the *status* is 0, the returned count is stored in the *key/count* field of the message.
+- For /num_items/, if the *status* is 0, the returned count is stored in the *key/count* field of the message.
 
 **** /int/ *key/count*
 ***** Request: this is the key of the element requested
