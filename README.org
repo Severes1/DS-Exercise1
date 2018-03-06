@@ -26,15 +26,15 @@ its own unique name for its message queue and provide that name to the server. (
 
 * Message Design
 There is a single message type for both requests and responses. It has 5 fields and is structured as follows:
-| Field                 | Size        |
-|-----------------------+-------------|
-| char type/status      | 1 byte      |
-| int key/count         | 4 bytes     |
-| char value1[256]      | 256 bytes   |
-| float value2          | 4 bytes     |
-| char return_queue[35] | 35 bytes    |
-|-----------------------+-------------|
-| *Total*               | *300 bytes* |
+| Field                    | Size        |
+|--------------------------+-------------|
+| char type/status         | 1 byte      |
+| int key/count            | 4 bytes     |
+| char value1 [ 256 ]      | 256 bytes   |
+| float value2             | 4 bytes     |
+| char return_queue [ 35 ] | 35 bytes    |
+|--------------------------+-------------|
+| *Total*                  | *300 bytes* |
 
 **** /char/ *type/status*
 
@@ -120,17 +120,23 @@ field, and the relevant processing function is invoked.
 The *database.h* header file provides a list of general purpose functions on an
 abstract datatype called /Database/. It assumes data is stored by a unique key,
 but assumes nothing about the data itself (arbitrary binary data, with a provided
-size). There are two implementations of this database.
+size). There are two implementations of this database. They are both compiled
+to /libdb.a/ in the Makefile.
 
 *** Treemap
 
     The treemap is a binary search tree sorted by the keys stored inside of it,
     and supporting operations to insert and delete keys.
 
-*** TODO Filemap
+*** Filemap
+    
+    The filemap is a simple directory containing files whose names are keys, and
+    whose contents are the data.
 
 ** Client
 The client side abstracts access to the remote database using *keys.h*.
 
 ** How to compile
-Invoke /make/ in the topmost directory to compile the entire project.
+- Invoke *make* in the topmost directory to compile the entire project.
+
+- To choose which type of database to use, run *make db_treemap* or *make db_file*, then run *make* again.
