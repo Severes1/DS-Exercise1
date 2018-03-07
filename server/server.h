@@ -7,16 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 
-Response RESPONSE_SUCCESS;
-Response RESPONSE_ERROR;
-
-pthread_mutex_t mutex_cpy_msg;
-pthread_cond_t cond_cpy_msg;
-int msg_copied;
-
-Database database = NULL; 
-pthread_mutex_t mutex_database;
-
 typedef struct Data Data;
 
 Data new_data(char * value1, float value2); 
@@ -39,4 +29,5 @@ Response process_delete(Request request);
 /* Return a message with the number of entries in the database */
 Response process_count(Request request);
 
+/* The entry point for a worker thread. Copies the buffer using a mutex, and sends a response */
 void * process_request(void * buffer);
