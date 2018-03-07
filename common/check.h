@@ -1,3 +1,8 @@
+/*  
+ *  This is a macro to help cleanly handle errors.
+ *
+ *  */
+
 #define CHECK(x, y) do { \
       int retval = (x); \
       if (retval < 0) { \
