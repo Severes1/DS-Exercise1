@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_THREADS 32
 #define TRUE 1
 #define FALSE 0
 
