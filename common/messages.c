@@ -113,20 +113,20 @@ int receive_message(Connection connection, Message * buffer) {
 char * message_to_string(Message * msg) {
     char * ret = malloc(MSG_SIZE);
     if (msg->status == 0 && msg->key == 0) {
-	if (strlen(msg->return_queue) > 0) {
+	    if (strlen(msg->return_queue) > 0) {
             sprintf(ret, "\tINIT");	
-	    return ret;
+	        return ret;
         } else {
-	    sprintf(ret, "\tSUCCESS");
-	    return ret;
-	}
+	        sprintf(ret, "\tSUCCESS");
+	        return ret;
+	    }
     } 
     if (msg->status == 1) {
         sprintf(ret, "\tSET key:%d, \n\tvalue1: %s, \n\tvalue2: %f, \n\treturn_queue: %s",
 		      msg->key,
 		      msg->value1,
  		      msg->value2,
-    		      msg->return_queue);
+    	      msg->return_queue);
         return ret;
     }
     if (msg->status == 2) {
@@ -138,7 +138,7 @@ char * message_to_string(Message * msg) {
 		      msg->key,
 		      msg->value1,
  		      msg->value2,
-    		      msg->return_queue);
+    		  msg->return_queue);
         return ret;
     }
     if (msg->status == 4) {
