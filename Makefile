@@ -1,13 +1,14 @@
 DB = libdb.a
+KEYS = libkeys.a
 
 COMMON_SRCS = common/messages.c
 SERVER_SRCS = server/server.c server/treemap/treemap.c server/treemap/treemap_db.c
 SERVER_SRCS = server/server.c server/file_db/file_db.c
-CLIENT_SRCS = client/keys.c client/test_server.c
+CLIENT_SRCS = client/client.c
 
 COMMON_LIBS = -lrt
 SERVER_LIBS = -pthread
-CLIENT_LIBS = 
+CLIENT_LIBS = $(KEYS)
 
 COMMON_INCLUDES = -Icommon
 SERVER_INCLUDES = -Iserver -Iserver/treemap -Iserver/file_db
@@ -36,6 +37,11 @@ db_file:
 
 $(DB):
 	$(MAKE) db_treemap
+
+$(KEYS): client/keys.c client/keys.h
+	$(CC) -c client/keys.c $(COMMON_INCLUDES)
+	ar -cvq $(KEYS) keys.o
+	rm keys.o
 
 run_server: $(COMMON_SRCS) $(SERVER_SRCS) $(DB)
 	$(CC) -o run_server $(COMMON) $(SERVER_SRCS) $(SERVER_INCLUDES) $(SERVER_LIBS) $(DB)
